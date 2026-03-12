@@ -16,41 +16,51 @@ export default function ScrollyCanvas() {
   
   const [images, setImages] = useState<HTMLImageElement[]>([]);
   const [loadingProgress, setLoadingProgress] = useState(0);
-  const [isReady, setIsReady] = useState(false);
+  const [isReady, setIsReady] = useState(false); // Controls when the site becomes interactive
   
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"]
   });
 
-  // Preload Images
+  // Preload Images progressively
   useEffect(() => {
     let loadedCount = 0;
+    const PRIORITY_FRAMES = 20; // Load these first to allow interaction
     const loadedImages: HTMLImageElement[] = [];
     
+    // Start loading all images, but track priority separately
     for (let i = 1; i <= FRAME_COUNT; i++) {
       const img = new Image();
       img.src = getFramePath(i);
+      
       img.onload = () => {
         loadedCount++;
-        setLoadingProgress(Math.floor((loadedCount / FRAME_COUNT) * 100));
-        if (loadedCount === FRAME_COUNT) {
-          setIsReady(true);
+        
+        // Only update progress and "isReady" based on priority frames initially
+        if (!isReady) {
+          const progress = Math.min(100, Math.floor((loadedCount / PRIORITY_FRAMES) * 100));
+          setLoadingProgress(progress);
+          
+          if (loadedCount >= PRIORITY_FRAMES) {
+            setIsReady(true);
+          }
         }
       };
       loadedImages.push(img);
     }
     setImages(loadedImages);
-  }, []);
+  }, [isReady]);
 
   const renderFrame = (index: number) => {
     const canvas = canvasRef.current;
     if (!canvas || images.length === 0) return;
     
-    const ctx = canvas.getContext("2d", { alpha: false }); // Optimization for static backgrounds
+    const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
 
     const img = images[Math.max(0, Math.min(FRAME_COUNT - 1, index))];
+    // Fallback if background image isn't loaded yet - render closest available or just return
     if (!img || !img.complete) return;
 
     const hRatio = canvas.width / img.width;
@@ -67,13 +77,11 @@ export default function ScrollyCanvas() {
     );
   };
 
-  // Dedicated Resize effect to avoid layout thrashing during scroll
   useEffect(() => {
     const updateCanvasSize = () => {
       if (canvasRef.current) {
         canvasRef.current.width = window.innerWidth * (window.devicePixelRatio || 1);
         canvasRef.current.height = window.innerHeight * (window.devicePixelRatio || 1);
-        // Important: Re-render the first frame or current frame after resize
         const currentIndex = Math.round(scrollYProgress.get() * (FRAME_COUNT - 1));
         renderFrame(currentIndex);
       }
@@ -84,15 +92,12 @@ export default function ScrollyCanvas() {
     return () => window.removeEventListener("resize", updateCanvasSize);
   }, [images, isReady]);
 
-  // Ensure first frame renders when images load
   useEffect(() => {
     if (isReady) {
       renderFrame(0);
     }
   }, [isReady]);
 
-  // Scrub through animation - requestAnimationFrame used via Framer Motion automatically, 
-  // but we ensure we only call our renderFrame
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     if (!isReady) return;
     const currentFrame = Math.round(latest * (FRAME_COUNT - 1));
@@ -104,8 +109,8 @@ export default function ScrollyCanvas() {
       {/* Loading Overlay */}
       {!isReady && (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#121212]">
-          <div className="text-4xl font-bold mb-4 tracking-tighter bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent animate-pulse">
-            LOADING EXPERIENCE
+          <div className="text-4xl font-bold mb-4 tracking-tighter bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent animate-pulse uppercase">
+            Preparing Experience
           </div>
           <div className="w-64 h-1 bg-white/10 rounded-full overflow-hidden">
             <div 
@@ -113,8 +118,8 @@ export default function ScrollyCanvas() {
               style={{ width: `${loadingProgress}%` }}
             />
           </div>
-          <div className="mt-2 text-xs uppercase tracking-widest text-gray-500 font-mono">
-            {loadingProgress}% Sequence Loaded
+          <div className="mt-4 text-[10px] uppercase tracking-[0.3em] text-white/40 font-mono">
+            Fast-tracking visual sequence... {loadingProgress}%
           </div>
         </div>
       )}
