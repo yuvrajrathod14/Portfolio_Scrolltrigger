@@ -60,10 +60,10 @@ export default function Overlay() {
         >
           <span className="text-white/40 text-xs md:text-sm font-bold tracking-widest uppercase mb-4">The Journey</span>
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white max-w-4xl leading-[1.1]">
-            From childhood dreams of amazing cartoons like Doremon, to defining the future of impact-driven animation.
+            From childhood dreams to defining the future of animation.
           </h2>
           <p className="mt-8 text-neutral-400 text-base md:text-xl max-w-2xl leading-relaxed" data-cursor>
-            I aim to create work that has a lasting impact, making narratives that resonate deeply with viewers.
+            Creating narratives that resonate deeply with every viewer.
           </p>
         </motion.div>
 
@@ -74,10 +74,10 @@ export default function Overlay() {
         >
           <span className="text-white/40 text-xs md:text-sm font-bold tracking-widest uppercase mb-4 opacity-70">Collaboration</span>
           <h2 className="text-2xl md:text-5xl font-bold tracking-tight text-white max-w-3xl leading-[1.1]">
-            I thrive on creative exchange & collaborative growth.
+            Creative exchange and collaborative growth.
           </h2>
           <p className="mt-8 text-neutral-400 text-base md:text-xl max-w-xl leading-relaxed">
-            Weaving narratives that are not only memorable but relatable to audiences worldwide.
+            Crafting memorable stories for global audiences.
           </p>
         </motion.div>
 
